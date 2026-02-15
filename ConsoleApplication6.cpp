@@ -18,7 +18,7 @@ double fun(double x, int maxn = 100)
     int n = 0;
     double prev = -1;
 
-    while (!(n > maxn))
+    while (n<=maxn)
     {
 
         double a1 = pow(-1, n);
@@ -47,7 +47,7 @@ int main()
     for (int i = 0; i < 4; i++) {
         cout << "x = " << x[i];
         cout << fixed << setprecision(12);
-        cout << "  erf(x) = " << erf(x[i]) << " fun(x) = "<<fun(x[i])<<" разница =  "<<fabs(fun(x[i])- erf(x[i])) << endl;
+        cout << "  erf(x) = " << erf(x[i]) << " fun(x) = " << fun(x[i]) << " разница =  " << fabs(fun(x[i]) - erf(x[i])) << endl;
     }
 
     return 0;
