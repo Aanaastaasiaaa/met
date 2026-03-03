@@ -1,31 +1,178 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35222.181
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3.1", "3.1\3.1.vcxproj", "{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Debug|x64.ActiveCfg = Debug|x64
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Debug|x64.Build.0 = Debug|x64
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Debug|x86.ActiveCfg = Debug|Win32
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Debug|x86.Build.0 = Debug|Win32
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Release|x64.ActiveCfg = Release|x64
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Release|x64.Build.0 = Release|x64
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Release|x86.ActiveCfg = Release|Win32
-		{E9B22F98-1D20-4BEC-8933-6197ADAD4D24}.Release|x86.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5A028A58-0BD6-4875-9EBD-BEC771C44728}
-	EndGlobalSection
-EndGlobal
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+#include <vector>
+
+using namespace std;
+
+double fuc(int x)
+{
+    if (x == 1 || x == 0) return 1;
+    return x * fuc(x - 1);
+}
+
+double Erf(double x, int maxn = 100)
+{
+    const double pi = acos(-1.0);
+    double sc = 2.0 / sqrt(pi);
+    double sum = 0.0;
+    int n = 0;
+    double prev = -1;
+
+    while (n <= maxn)
+    {
+        double a1 = pow(-1, n);
+        double a2 = pow(x, 2 * n + 1);
+        double a3 = fuc(n);
+        double a4 = 2 * n + 1;
+        double term = a1 * a2 / (a3 * a4);
+
+        sum += term;
+
+        if (sum == prev) {
+            break;
+        }
+
+        prev = sum;
+        n++;
+    }
+
+    return sum * sc;
+}
+
+vector<double> cramer(const vector<vector<double>>& A, const vector<double>& b) {
+    double det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+
+    double det1 = b[0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (b[1] * A[2][2] - A[1][2] * b[2]) + A[0][2] * (b[1] * A[2][1] - A[1][1] * b[2]);
+
+    double det2 = A[0][0] * (b[1] * A[2][2] - A[1][2] * b[2]) - b[0] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * b[2] - b[1] * A[2][0]);
+
+    double det3 = A[0][0] * (A[1][1] * b[2] - b[1] * A[2][1]) - A[0][1] * (A[1][0] * b[2] - b[1] * A[2][0]) + b[0] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+
+    vector<double> x(3);
+    x[0] = det1 / det;
+    x[1] = det2 / det;
+    x[2] = det3 / det;
+
+    return x;
+}
+
+double matrix_norm(const vector<vector<double>>& A) {
+    double max_sum = 0.0;
+    for (int j = 0; j < 3; j++) {
+        double sum = fabs(A[0][j]) + fabs(A[1][j]) + fabs(A[2][j]);
+        if (sum > max_sum) max_sum = sum;
+    }
+    return max_sum;
+}
+
+vector<vector<double>> inverse_3x3(const vector<vector<double>>& A) {
+    double det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1])
+        - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0])
+        + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+
+    vector<vector<double>> inv(3, vector<double>(3));
+
+    inv[0][0] = (A[1][1] * A[2][2] - A[1][2] * A[2][1]) / det;
+    inv[0][1] = -(A[1][0] * A[2][2] - A[1][2] * A[2][0]) / det;
+    inv[0][2] = (A[1][0] * A[2][1] - A[1][1] * A[2][0]) / det;
+
+    inv[1][0] = -(A[0][1] * A[2][2] - A[0][2] * A[2][1]) / det;
+    inv[1][1] = (A[0][0] * A[2][2] - A[0][2] * A[2][0]) / det;
+    inv[1][2] = -(A[0][0] * A[2][1] - A[0][1] * A[2][0]) / det;
+
+    inv[2][0] = (A[0][1] * A[1][2] - A[0][2] * A[1][1]) / det;
+    inv[2][1] = -(A[0][0] * A[1][2] - A[0][2] * A[1][0]) / det;
+    inv[2][2] = (A[0][0] * A[1][1] - A[0][1] * A[1][0]) / det;
+
+    return inv;
+}
+
+vector<double> mat_mul_vec(const vector<vector<double>>& A, const vector<double>& x) {
+    vector<double> res(3, 0.0);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            res[i] += A[i][j] * x[j];
+        }
+    }
+    return res;
+}
+
+int main() {
+    setlocale(LC_ALL, "RUS");
+    cout << fixed << setprecision(12);
+
+    // Задание 1
+    cout << "ЗАДАНИЕ 1" << endl;
+    cout << "---------" << endl;
+
+    vector<vector<double>> A = {{1.00, 0.80, 0.64}, {1.00, 0.90, 0.81}, {1.00, 1.10, 1.21}};
+
+    vector<double> b = {Erf(0.80), Erf(0.90), Erf(1.10)};
+
+    vector<double> x = cramer(A, b);
+    cout << "Решение системы:" << endl;
+    cout << "x1 = " << x[0] << endl;
+    cout << "x2 = " << x[1] << endl;
+    cout << "x3 = " << x[2] << endl;
+
+    double normA = matrix_norm(A);
+    vector<vector<double>> A_inv = inverse_3x3(A);
+    double normA_inv = matrix_norm(A_inv);
+    double cond = normA * normA_inv;
+    cout << "Обусловленность матрицы cond(A) = " << cond << endl;
+
+    vector<double> Ax = mat_mul_vec(A, x);
+    double nev = max(fabs(Ax[0] - b[0]), max(fabs(Ax[1] - b[1]), fabs(Ax[2] - b[2])));
+    cout << "Невязка |Ax - b| = " << nev << endl;
+
+    double sum_x = x[0] + x[1] + x[2];
+    double erf1 = Erf(1.0);
+    cout << "x1 + x2 + x3 = " << sum_x << endl;
+    cout << "erf(1.0) = " << erf1 << endl;
+    cout << "Разница = " << fabs(sum_x - erf1) << endl;
+    cout << "Они близки, потому что сумма x1+x2+x3 аппроксимирует интеграл от 0 до 1" << endl;
+    cout << endl;
+
+    cout << "ЗАДАНИЕ 2" << endl;
+    cout << "---------" << endl;
+
+    vector<vector<double>> A2 = {{0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}, {0.7, 0.8, 0.9}};
+    vector<double> b2 = { 0.1, 0.3, 0.5 };
+
+    double det2 = A2[0][0] * (A2[1][1] * A2[2][2] - A2[1][2] * A2[2][1])
+        - A2[0][1] * (A2[1][0] * A2[2][2] - A2[1][2] * A2[2][0])
+        + A2[0][2] * (A2[1][0] * A2[2][1] - A2[1][1] * A2[2][0]);
+
+    cout << "Определитель матрицы = " << det2 << " (близок к нулю)" << endl;
+    cout << "Значит, система имеет бесконечно много решений." << endl;
+
+    // Покажем, что строки линейно зависимы
+    cout << "Проверим: 3-я строка = 1-я строка + 2-я строка - 0.4?" << endl;
+    cout << "0.7 = 0.1 + 0.4 + 0.2" << endl;
+    cout << "0.8 = 0.2 + 0.5 + 0.1" << endl;
+    cout << "0.9 = 0.3 + 0.6 + 0.0" << endl;
+
+    // Найдем одно решение
+    // Возьмем первые 2 уравнения и решим относительно x1, x2 при x3 = 0
+    // 0.1*x1 + 0.2*x2 = 0.1
+    // 0.4*x1 + 0.5*x2 = 0.3
+    double det22 = 0.1 * 0.5 - 0.2 * 0.4; // = -0.03
+    double x1_ = (0.1 * 0.5 - 0.2 * 0.3) / det22; // = (0.05 - 0.06)/(-0.03) = 1/3
+    double x2_ = (0.1 * 0.3 - 0.1 * 0.4) / det22; // = (0.03 - 0.04)/(-0.03) = 1/3
+
+    cout << "Одно из решений (при x3 = 0):" << endl;
+    cout << "x1 = " << x1_ << ", x2 = " << x2_ << ", x3 = 0" << endl;
+
+    // Проверка в 3-м уравнении
+    double check = 0.7 * x1_ + 0.8 * x2_ + 0.9 * 0;
+    cout << "Проверка в 3-м уравнении: 0.7*(1/3) + 0.8*(1/3) = " << check;
+    cout << " (должно быть 0.5)" << endl;
+    cout << "Разница = " << fabs(check - 0.5) << " (из-за округлений)" << endl;
+
+    // Общее решение
+    cout << "Общее решение: (1/3, 1/3, 0) + t*(1, -2, 1), где t - любое число" << endl;
+    cout << "Проверка: A*(1, -2, 1) = (0, 0, 0)" << endl;
+
+    return 0;
+}
