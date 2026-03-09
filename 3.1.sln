@@ -1,178 +1,143 @@
 #include <iostream>
-#include <cmath>
 #include <iomanip>
-#include <vector>
-
+#include <cmath>
 using namespace std;
 
-double fuc(int x)
-{
-    if (x == 1 || x == 0) return 1;
-    return x * fuc(x - 1);
-}
+int main() {
+    setlocale(LC_ALL, "rus");
+    cout << fixed << setprecision(10);
 
-double Erf(double x, int maxn = 100)
-{
-    const double pi = acos(-1.0);
-    double sc = 2.0 / sqrt(pi);
-    double sum = 0.0;
-    int n = 0;
-    double prev = -1;
+    double A[3][3] = {{1.00, 0.80, 0.64}, {1.00, 0.90, 0.81}, {1.00, 1.10, 1.21}};
+    double b[3] = { erf(0.80), erf(0.90), erf(1.10) };
 
-    while (n <= maxn)
-    {
-        double a1 = pow(-1, n);
-        double a2 = pow(x, 2 * n + 1);
-        double a3 = fuc(n);
-        double a4 = 2 * n + 1;
-        double term = a1 * a2 / (a3 * a4);
-
-        sum += term;
-
-        if (sum == prev) {
-            break;
-        }
-
-        prev = sum;
-        n++;
-    }
-
-    return sum * sc;
-}
-
-vector<double> cramer(const vector<vector<double>>& A, const vector<double>& b) {
-    double det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
-
-    double det1 = b[0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (b[1] * A[2][2] - A[1][2] * b[2]) + A[0][2] * (b[1] * A[2][1] - A[1][1] * b[2]);
-
-    double det2 = A[0][0] * (b[1] * A[2][2] - A[1][2] * b[2]) - b[0] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * b[2] - b[1] * A[2][0]);
-
-    double det3 = A[0][0] * (A[1][1] * b[2] - b[1] * A[2][1]) - A[0][1] * (A[1][0] * b[2] - b[1] * A[2][0]) + b[0] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
-
-    vector<double> x(3);
-    x[0] = det1 / det;
-    x[1] = det2 / det;
-    x[2] = det3 / det;
-
-    return x;
-}
-
-double matrix_norm(const vector<vector<double>>& A) {
-    double max_sum = 0.0;
-    for (int j = 0; j < 3; j++) {
-        double sum = fabs(A[0][j]) + fabs(A[1][j]) + fabs(A[2][j]);
-        if (sum > max_sum) max_sum = sum;
-    }
-    return max_sum;
-}
-
-vector<vector<double>> inverse_3x3(const vector<vector<double>>& A) {
-    double det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1])
-        - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0])
-        + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
-
-    vector<vector<double>> inv(3, vector<double>(3));
-
-    inv[0][0] = (A[1][1] * A[2][2] - A[1][2] * A[2][1]) / det;
-    inv[0][1] = -(A[1][0] * A[2][2] - A[1][2] * A[2][0]) / det;
-    inv[0][2] = (A[1][0] * A[2][1] - A[1][1] * A[2][0]) / det;
-
-    inv[1][0] = -(A[0][1] * A[2][2] - A[0][2] * A[2][1]) / det;
-    inv[1][1] = (A[0][0] * A[2][2] - A[0][2] * A[2][0]) / det;
-    inv[1][2] = -(A[0][0] * A[2][1] - A[0][1] * A[2][0]) / det;
-
-    inv[2][0] = (A[0][1] * A[1][2] - A[0][2] * A[1][1]) / det;
-    inv[2][1] = -(A[0][0] * A[1][2] - A[0][2] * A[1][0]) / det;
-    inv[2][2] = (A[0][0] * A[1][1] - A[0][1] * A[1][0]) / det;
-
-    return inv;
-}
-
-vector<double> mat_mul_vec(const vector<vector<double>>& A, const vector<double>& x) {
-    vector<double> res(3, 0.0);
+    cout << "Матрица A:" << endl;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            res[i] += A[i][j] * x[j];
+            cout << A[i][j] << " ";
         }
+        cout << endl;
     }
-    return res;
-}
 
-int main() {
-    setlocale(LC_ALL, "RUS");
-    cout << fixed << setprecision(12);
-
-    // Задание 1
-    cout << "ЗАДАНИЕ 1" << endl;
-    cout << "---------" << endl;
-
-    vector<vector<double>> A = {{1.00, 0.80, 0.64}, {1.00, 0.90, 0.81}, {1.00, 1.10, 1.21}};
-
-    vector<double> b = {Erf(0.80), Erf(0.90), Erf(1.10)};
-
-    vector<double> x = cramer(A, b);
-    cout << "Решение системы:" << endl;
-    cout << "x1 = " << x[0] << endl;
-    cout << "x2 = " << x[1] << endl;
-    cout << "x3 = " << x[2] << endl;
-
-    double normA = matrix_norm(A);
-    vector<vector<double>> A_inv = inverse_3x3(A);
-    double normA_inv = matrix_norm(A_inv);
-    double cond = normA * normA_inv;
-    cout << "Обусловленность матрицы cond(A) = " << cond << endl;
-
-    vector<double> Ax = mat_mul_vec(A, x);
-    double nev = max(fabs(Ax[0] - b[0]), max(fabs(Ax[1] - b[1]), fabs(Ax[2] - b[2])));
-    cout << "Невязка |Ax - b| = " << nev << endl;
-
-    double sum_x = x[0] + x[1] + x[2];
-    double erf1 = Erf(1.0);
-    cout << "x1 + x2 + x3 = " << sum_x << endl;
-    cout << "erf(1.0) = " << erf1 << endl;
-    cout << "Разница = " << fabs(sum_x - erf1) << endl;
-    cout << "Они близки, потому что сумма x1+x2+x3 аппроксимирует интеграл от 0 до 1" << endl;
+    cout << "\nВектор b:" << endl;
+    for (int i = 0; i < 3; i++) {
+        cout << b[i] << endl;
+    }
     cout << endl;
 
-    cout << "ЗАДАНИЕ 2" << endl;
-    cout << "---------" << endl;
+    double detA = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
 
-    vector<vector<double>> A2 = {{0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}, {0.7, 0.8, 0.9}};
-    vector<double> b2 = { 0.1, 0.3, 0.5 };
+    cout << "Определитель A = " << detA << endl;
 
-    double det2 = A2[0][0] * (A2[1][1] * A2[2][2] - A2[1][2] * A2[2][1])
-        - A2[0][1] * (A2[1][0] * A2[2][2] - A2[1][2] * A2[2][0])
-        + A2[0][2] * (A2[1][0] * A2[2][1] - A2[1][1] * A2[2][0]);
+    double detX1 = b[0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (b[1] * A[2][2] - A[1][2] * b[2]) + A[0][2] * (b[1] * A[2][1] - A[1][1] * b[2]);
 
-    cout << "Определитель матрицы = " << det2 << " (близок к нулю)" << endl;
-    cout << "Значит, система имеет бесконечно много решений." << endl;
+    double detX2 = A[0][0] * (b[1] * A[2][2] - A[1][2] * b[2]) - b[0] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * b[2] - b[1] * A[2][0]);
 
-    // Покажем, что строки линейно зависимы
-    cout << "Проверим: 3-я строка = 1-я строка + 2-я строка - 0.4?" << endl;
-    cout << "0.7 = 0.1 + 0.4 + 0.2" << endl;
-    cout << "0.8 = 0.2 + 0.5 + 0.1" << endl;
-    cout << "0.9 = 0.3 + 0.6 + 0.0" << endl;
+    double detX3 = A[0][0] * (A[1][1] * b[2] - b[1] * A[2][1]) - A[0][1] * (A[1][0] * b[2] - b[1] * A[2][0]) + b[0] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
 
-    // Найдем одно решение
-    // Возьмем первые 2 уравнения и решим относительно x1, x2 при x3 = 0
-    // 0.1*x1 + 0.2*x2 = 0.1
-    // 0.4*x1 + 0.5*x2 = 0.3
-    double det22 = 0.1 * 0.5 - 0.2 * 0.4; // = -0.03
-    double x1_ = (0.1 * 0.5 - 0.2 * 0.3) / det22; // = (0.05 - 0.06)/(-0.03) = 1/3
-    double x2_ = (0.1 * 0.3 - 0.1 * 0.4) / det22; // = (0.03 - 0.04)/(-0.03) = 1/3
+    double x1 = detX1 / detA;
+    double x2 = detX2 / detA;
+    double x3 = detX3 / detA;
 
-    cout << "Одно из решений (при x3 = 0):" << endl;
-    cout << "x1 = " << x1_ << ", x2 = " << x2_ << ", x3 = 0" << endl;
+    cout << "\nРешение:" << endl;
+    cout << "x1 = " << x1 << endl;
+    cout << "x2 = " << x2 << endl;
+    cout << "x3 = " << x3 << endl;
 
-    // Проверка в 3-м уравнении
-    double check = 0.7 * x1_ + 0.8 * x2_ + 0.9 * 0;
-    cout << "Проверка в 3-м уравнении: 0.7*(1/3) + 0.8*(1/3) = " << check;
-    cout << " (должно быть 0.5)" << endl;
-    cout << "Разница = " << fabs(check - 0.5) << " (из-за округлений)" << endl;
+    double inv[3][3];
 
-    // Общее решение
-    cout << "Общее решение: (1/3, 1/3, 0) + t*(1, -2, 1), где t - любое число" << endl;
-    cout << "Проверка: A*(1, -2, 1) = (0, 0, 0)" << endl;
+    inv[0][0] = (A[1][1] * A[2][2] - A[1][2] * A[2][1]) / detA;
+    inv[0][1] = -(A[1][0] * A[2][2] - A[1][2] * A[2][0]) / detA;
+    inv[0][2] = (A[1][0] * A[2][1] - A[1][1] * A[2][0]) / detA;
 
-    return 0;
+    inv[1][0] = -(A[0][1] * A[2][2] - A[0][2] * A[2][1]) / detA;
+    inv[1][1] = (A[0][0] * A[2][2] - A[0][2] * A[2][0]) / detA;
+    inv[1][2] = -(A[0][0] * A[2][1] - A[0][1] * A[2][0]) / detA;
+
+    inv[2][0] = (A[0][1] * A[1][2] - A[0][2] * A[1][1]) / detA;
+    inv[2][1] = -(A[0][0] * A[1][2] - A[0][2] * A[1][0]) / detA;
+    inv[2][2] = (A[0][0] * A[1][1] - A[0][1] * A[1][0]) / detA;
+
+    double normA = 0;
+    for (int j = 0; j < 3; j++) {
+        double sum = abs(A[0][j]) + abs(A[1][j]) + abs(A[2][j]);
+        if (sum > normA) normA = sum;
+    }
+
+    double normInv = 0;
+    for (int j = 0; j < 3; j++) {
+        double sum = abs(inv[0][j]) + abs(inv[1][j]) + abs(inv[2][j]);
+        if (sum > normInv) normInv = sum;
+    }
+
+    double cond = normA * normInv;
+    cout << "\nНорма A = " << normA << endl;
+    cout << "Норма A^(-1) = " << normInv << endl;
+    cout << "Число обусловленности = " << cond << endl;
+
+    double Ax[3];
+    for (int i = 0; i < 3; i++) {
+        Ax[i] = A[i][0] * x1 + A[i][1] * x2 + A[i][2] * x3;
+    }
+
+    double nev = 0;
+    for (int i = 0; i < 3; i++) {
+        nev += abs(Ax[i] - b[i]);
+    }
+    cout << "\nНевязка = " << nev << endl;
+
+    double sum_x = x1 + x2 + x3;
+    double erf1 = erf(1.0);
+
+    cout << "\nx1 + x2 + x3 = " << sum_x << endl;
+    cout << "erf(1.0) = " << erf1 << endl;
+    cout << "Разница = " << abs(sum_x - erf1) << endl<< endl;
+
+    double A2[3][3] = {{0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}, {0.7, 0.8, 0.9}};
+
+    double b2[3] = { 0.1, 0.3, 0.5 };
+
+    cout << "\nМатрица A2:" << endl;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            cout << A2[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << "\nВектор b2: " << b2[0] << ", " << b2[1] << ", " << b2[2] << endl;
+
+    double detA2 = A2[0][0] * (A2[1][1] * A2[2][2] - A2[1][2] * A2[2][1]) - A2[0][1] * (A2[1][0] * A2[2][2] - A2[1][2] * A2[2][0]) + A2[0][2] * (A2[1][0] * A2[2][1] - A2[1][1] * A2[2][0]);
+
+    cout << "\nОпределитель A2 = " << detA2 << " матрица вырожденная" << endl;
+
+    cout << "\nСтрока 3 - Строка 2 = ";
+    for (int j = 0; j < 3; j++) {
+        cout << A2[2][j] - A2[1][j] << " ";
+    }
+
+    cout << "\nСтрока 2 - Строка 1 = ";
+    for (int j = 0; j < 3; j++) {
+        cout << A2[1][j] - A2[0][j] << " ";
+    }
+    cout << "\nстроки линейно зависимы" << endl;
+
+    cout << "\nb3 - b2 = " << b2[2] - b2[1] << endl;
+    cout << "b2 - b1 = " << b2[1] - b2[0] << endl;
+    cout << "система совместна " << endl;
+
+    cout << "система имеет бескрнечно много решений" << endl << endl;;
+
+    cout << "при x3 = 0:" << endl;
+    double det_main = 0.1 * 0.5 - 0.2 * 0.4;
+    double x1_0 = (0.1 * 0.5 - 0.2 * 0.3) / det_main;
+    double x2_0 = (0.1 * 0.3 - 0.1 * 0.4) / det_main;
+
+    cout << "x1 = " << x1_0 << ", x2 = " << x2_0 << ", x3 = 0" << endl;
+
+    cout << "\nпри x3 = 1:" << endl;
+
+    double x1_1 = ((-0.2) * 0.5 - 0.2 * (-0.3)) / det_main;
+    double x2_1 = (0.1 * (-0.3) - (-0.2) * 0.4) / det_main;
+
+    cout << "x1 = " << x1_1 << ", x2 = " << x2_1 << ", x3 = 1" << endl;
 }
