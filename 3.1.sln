@@ -7,7 +7,7 @@ int main() {
     setlocale(LC_ALL, "rus");
     cout << fixed << setprecision(10);
 
-    double A[3][3] = {{1.00, 0.80, 0.64}, {1.00, 0.90, 0.81}, {1.00, 1.10, 1.21}};
+    double A[3][3] = { {1.00, 0.80, 0.64}, {1.00, 0.90, 0.81}, {1.00, 1.10, 1.21} };
     double b[3] = { erf(0.80), erf(0.90), erf(1.10) };
 
     cout << "Матрица A:" << endl;
@@ -90,9 +90,9 @@ int main() {
 
     cout << "\nx1 + x2 + x3 = " << sum_x << endl;
     cout << "erf(1.0) = " << erf1 << endl;
-    cout << "Разница = " << abs(sum_x - erf1) << endl<< endl;
+    cout << "Разница = " << abs(sum_x - erf1) << endl << endl;
 
-    double A2[3][3] = {{0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}, {0.7, 0.8, 0.9}};
+    double A2[3][3] = { {0.1, 0.2, 0.3}, {0.4, 0.5, 0.6}, {0.7, 0.8, 0.9} };
 
     double b2[3] = { 0.1, 0.3, 0.5 };
 
@@ -123,21 +123,5 @@ int main() {
 
     cout << "\nb3 - b2 = " << b2[2] - b2[1] << endl;
     cout << "b2 - b1 = " << b2[1] - b2[0] << endl;
-    cout << "система совместна " << endl;
-
-    cout << "система имеет бескрнечно много решений" << endl << endl;;
-
-    cout << "при x3 = 0:" << endl;
-    double det_main = 0.1 * 0.5 - 0.2 * 0.4;
-    double x1_0 = (0.1 * 0.5 - 0.2 * 0.3) / det_main;
-    double x2_0 = (0.1 * 0.3 - 0.1 * 0.4) / det_main;
-
-    cout << "x1 = " << x1_0 << ", x2 = " << x2_0 << ", x3 = 0" << endl;
-
-    cout << "\nпри x3 = 1:" << endl;
-
-    double x1_1 = ((-0.2) * 0.5 - 0.2 * (-0.3)) / det_main;
-    double x2_1 = (0.1 * (-0.3) - (-0.2) * 0.4) / det_main;
-
-    cout << "x1 = " << x1_1 << ", x2 = " << x2_1 << ", x3 = 1" << endl;
+    cout << "Система имеет бескрнечно много решений" << endl << endl;
 }
