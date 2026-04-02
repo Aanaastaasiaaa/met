@@ -98,7 +98,7 @@ void saveToCSV(const string& filename, const vector<double>& residuals) {
     ofstream file(filename.c_str());
     file << "Итерация,Невязка" << endl;
     for (size_t i = 0; i < residuals.size(); i++) {
-        file << i + 1 << "," << scientific << setprecision(15) << residuals[i] << endl;
+        file << i + 1 << ", " << scientific << setprecision(15) << residuals[i] << endl;
     }
     file.close();
 }
@@ -152,7 +152,7 @@ int main() {
         cout << "  Финальная невязка: " << residuals.back() << endl;
 
         stringstream ss;
-        ss << "residuals_jacobi_" << k + 1 << ".csv";
+        ss << "C:\\Users\\User\\OneDrive\\Desktop\\4\\jacobi_" << k + 1 << ".docx";
         saveToCSV(ss.str(), residuals);
 
         cout << "\nМЕТОД ЗЕЙДЕЛЯ" << endl;
@@ -163,7 +163,7 @@ int main() {
         cout << "  Финальная невязка: " << residuals.back() << endl;
 
         stringstream ss2;
-        ss2 << "residuals_seidel_" << k + 1 << ".csv";
+        ss2 << "C:\\Users\\User\\OneDrive\\Desktop\\4\\seidel_" << k + 1 << ".docx";
         saveToCSV(ss2.str(), residuals);
     }
 }
