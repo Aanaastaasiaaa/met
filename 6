@@ -1,0 +1,134 @@
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const double PI = acos(-1);
+
+double f(double x) {
+    if (x >= 0 && x < 2) {
+        return (10.0 * x) / 2;
+    }
+    else if (x >= 2 && x < 20) {
+        return 10.0 * (x - 20) / (2 - 20);
+    }
+    return 0.0;
+}
+
+void z1() {
+    cout << "1. Площадь треугольника методом Монте-Карло\n";
+
+    double w = 20.0;
+    double h = 10.0;
+    double Srect = w * h;
+    int N = 100000;
+    int M = 0;
+    for (int i = 0; i < N; i++) {
+        double x = (double)rand() / RAND_MAX * w;
+        double y = (double)rand() / RAND_MAX * h;
+        if (y < f(x)) {
+            M++;
+        }
+    }
+
+    double S = (double)M / N * Srect;
+    double Stoch = 100.0;
+
+    cout << "Точек N = " << N << endl;
+    cout << "Попало M = " << M << endl;
+    cout << "Площадь = " << S << endl;
+    cout << "Точная площадь = " << Stoch << endl;
+    cout << "Погрешность = " << fabs(S - Stoch) << endl;
+}
+
+void z2() {
+    cout << "\n2. Вычисление интеграла методом Монте-Карло\n";
+    auto g = [](double x) {
+        return sqrt(11.0 - 2.0 * sin(x) * sin(x));
+        };
+    double a = 0.0;
+    double b = 5.0;
+    double maxY = 0.0;
+    for (double x = a; x <= b; x += 0.001) {
+        double val = g(x);
+        if (val > maxY) maxY = val;
+    }
+    maxY += 0.5;
+    int N = 100000;
+    int M = 0;
+    for (int i = 0; i < N; i++) {
+        double x = a + (double)rand() / RAND_MAX * (b - a);
+        double y = (double)rand() / RAND_MAX * maxY;
+        if (y <= g(x)) {
+            M++;
+        }
+    }
+
+    double I = (double)M / N * (b - a) * maxY;
+
+    cout << "Интеграл = " << I << endl;
+    cout << "Точек N = " << N << endl;
+    cout << "Попало M = " << M << endl;
+    cout << "Высота = " << maxY << endl;
+}
+
+void z3() {
+    cout << "\n3. Вычисление числа pi через площадь круга\n";
+
+    double R = 2.0;
+    int N = 1000000;
+    int M = 0;
+    for (int i = 0; i < N; i++) {
+        double x = -R + (double)rand() / RAND_MAX * (2 * R);
+        double y = -R + (double)rand() / RAND_MAX * (2 * R);
+        if (x * x + y * y <= R * R) {
+            M++;
+        }
+    }
+
+    double pi_approx = 4.0 * M / N;
+
+    cout << "Радиус R = " << R << endl;
+    cout << "Точек N = " << N << endl;
+    cout << "Попало M = " << M << endl;
+    cout << "pi = " << pi_approx << endl;
+    cout << "Точное pi = " << PI << endl;
+    cout << "Погрешность = " << fabs(pi_approx - PI) << endl;
+}
+
+void z4() {
+    cout << "\n4. Площадь фигуры в полярных координатах\n";
+    double A = 13.0;
+    double B = 9.0;
+    double Rmax = sqrt(max(A, B));
+    int N = 100000;
+    int M = 0;
+    for (int i = 0; i < N; i++) {
+        double x = -Rmax + (double)rand() / RAND_MAX * (2 * Rmax);
+        double y = -Rmax + (double)rand() / RAND_MAX * (2 * Rmax);
+        double r = sqrt(x * x + y * y);
+        double phi = atan2(y, x);
+        if (phi < 0) phi += 2 * PI;
+        double r_max = sqrt(A * cos(phi) * cos(phi) + B * sin(phi) * sin(phi));
+        if (r <= r_max) {
+            M++;
+        }
+    }
+
+    double Ssquare = (2 * Rmax) * (2 * Rmax);
+    double Sfig = (double)M / N * Ssquare;
+
+    cout << "Точек N = " << N << endl;
+    cout << "Попало M = " << M << endl;
+    cout << "Площадь = " << Sfig << endl;
+}
+
+int main() {
+    setlocale(LC_ALL, "rus");
+    srand(time(0));
+    z1();
+    z2();
+    z3();
+    z4();
+}
