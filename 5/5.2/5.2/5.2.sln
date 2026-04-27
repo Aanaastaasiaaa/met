@@ -1,31 +1,150 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35222.181
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5.2", "5.2\5.2.vcxproj", "{9D3593C0-250B-4581-89F6-089B3DF0638D}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Debug|x64.ActiveCfg = Debug|x64
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Debug|x64.Build.0 = Debug|x64
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Debug|x86.ActiveCfg = Debug|Win32
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Debug|x86.Build.0 = Debug|Win32
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Release|x64.ActiveCfg = Release|x64
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Release|x64.Build.0 = Release|x64
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Release|x86.ActiveCfg = Release|Win32
-		{9D3593C0-250B-4581-89F6-089B3DF0638D}.Release|x86.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2CCE2C8E-A270-41DB-9064-76FAEDBF9410}
-	EndGlobalSection
-EndGlobal
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
+using namespace std;
+
+string format(double value) {
+    stringstream ss;
+    ss << fixed << setprecision(6) << value;
+    string str = ss.str();
+    replace(str.begin(), str.end(), '.', ',');
+    return str;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    vector<double> x = { 10, 20, 30, 40, 50, 60 };
+    vector<double> y = { 1.06, 1.33, 1.52, 1.68, 1.81, 1.91 };
+    int n = 6;
+
+    cout << "Исходные данные:" << endl;
+    for (int i = 0; i < n; i++) {
+        cout << "   x = " << x[i] << ", y = " << y[i] << endl;
+    }
+    cout << endl;
+
+    double sum_x = 0, sum_y = 0, sum_xy = 0, sum_x2 = 0;
+    for (int i = 0; i < n; i++) {
+        sum_x += x[i];
+        sum_y += y[i];
+        sum_xy += x[i] * y[i];
+        sum_x2 += x[i] * x[i];
+    }
+
+    double b_lin = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x);
+    double a_lin = (sum_y - b_lin * sum_x) / n;
+
+    cout << "Линейная: y = " << round(a_lin * 100) / 100 << " + " << round(b_lin * 100) / 100 << " * x" << endl;
+
+    double sum_lnx = 0, sum_lny = 0, sum_lnx2 = 0, sum_lnx_lny = 0;
+    for (int i = 0; i < n; i++) {
+        double lnx = log(x[i]);
+        double lny = log(y[i]);
+        sum_lnx += lnx;
+        sum_lny += lny;
+        sum_lnx2 += lnx * lnx;
+        sum_lnx_lny += lnx * lny;
+    }
+
+    double b_pow = (n * sum_lnx_lny - sum_lnx * sum_lny) / (n * sum_lnx2 - sum_lnx * sum_lnx);
+    double a_pow = exp((sum_lny - b_pow * sum_lnx) / n);
+
+    cout << "Степенная: y = " << round(a_pow * 100) / 100 << " * x^" << round(b_pow * 100) / 100 << endl;
+
+    double sum_lny_exp = 0, sum_x_lny = 0;
+    for (int i = 0; i < n; i++) {
+        double lny = log(y[i]);
+        sum_lny_exp += lny;
+        sum_x_lny += x[i] * lny;
+    }
+
+    double ln_b = (n * sum_x_lny - sum_x * sum_lny_exp) / (n * sum_x2 - sum_x * sum_x);
+    double ln_a = (sum_lny_exp - ln_b * sum_x) / n;
+    double a_exp = exp(ln_a);
+    double b_exp = exp(ln_b);
+
+    cout << "Показательная: y = " << round(a_exp * 100) / 100 << " * " << round(b_exp * 100) / 100 << "^x" << endl;
+
+    double sum_x3 = 0, sum_x4 = 0, sum_xy_quad = 0, sum_x2y = 0, sum_x2_quad = 0;
+    for (int i = 0; i < n; i++) {
+        double xi = x[i];
+        double xi2 = xi * xi;
+        double xi3 = xi2 * xi;
+        double xi4 = xi3 * xi;
+        sum_x3 += xi3;
+        sum_x4 += xi4;
+        sum_xy_quad += xi * y[i];
+        sum_x2y += xi2 * y[i];
+        sum_x2_quad += xi2;
+    }
+
+    double det_quad = n * (sum_x2_quad * sum_x4 - sum_x3 * sum_x3)
+        - sum_x * (sum_x * sum_x4 - sum_x3 * sum_x2_quad)
+        + sum_x2_quad * (sum_x * sum_x3 - sum_x2_quad * sum_x2_quad);
+
+    double det_a = sum_y * (sum_x2_quad * sum_x4 - sum_x3 * sum_x3)
+        - sum_x * (sum_xy_quad * sum_x4 - sum_x3 * sum_x2y)
+        + sum_x2_quad * (sum_xy_quad * sum_x3 - sum_x2_quad * sum_x2y);
+
+    double det_b = n * (sum_xy_quad * sum_x4 - sum_x3 * sum_x2y)
+        - sum_y * (sum_x * sum_x4 - sum_x3 * sum_x2_quad)
+        + sum_x2_quad * (sum_x * sum_x2y - sum_xy_quad * sum_x2_quad);
+
+    double det_c = n * (sum_x2_quad * sum_x2y - sum_xy_quad * sum_x3)
+        - sum_x * (sum_x * sum_x2y - sum_xy_quad * sum_x2_quad)
+        + sum_y * (sum_x * sum_x3 - sum_x2_quad * sum_x2_quad);
+
+    double a_quad = det_a / det_quad;
+    double b_quad = det_b / det_quad;
+    double c_quad = det_c / det_quad;
+
+    cout << "Квадратичная: y = " << round(a_quad * 100) / 100 << " + " << round(b_quad * 100) / 100 << " * x + " << round(c_quad * 100) / 100 << " * x^2" << endl << endl;
+
+    double err_lin = 0, err_pow = 0, err_exp = 0, err_quad = 0;
+    for (int i = 0; i < n; i++) {
+        err_lin += fabs(y[i] - (a_lin + b_lin * x[i]));
+        err_pow += fabs(y[i] - (a_pow * pow(x[i], b_pow)));
+        err_exp += fabs(y[i] - (a_exp * pow(b_exp, x[i])));
+        err_quad += fabs(y[i] - (a_quad + b_quad * x[i] + c_quad * x[i] * x[i]));
+    }
+    cout << "СУММАРНЫЕ ПОГРЕШНОСТИ:" << endl;
+    cout << "Линейная:      " << round(err_lin * 10000) / 10000 << endl;
+    cout << "Степенная:     " << round(err_pow * 10000) / 10000 << endl;
+    cout << "Показательная: " << round(err_exp * 10000) / 10000 << endl;
+    cout << "Квадратичная:  " << round(err_quad * 10000) / 10000 << endl << endl;
+
+    ofstream file("C:\\Users\\User\\OneDrive\\Desktop\\5\\5.2\\result.csv");
+    if (!file.is_open()) {
+        cout << "Ошибка создания файла!" << endl;
+        return 1;
+    }
+
+    file << "x;experimental;lin;step;pokaz;kvadrat" << endl;
+
+    for (double x_val = 5; x_val <= 65; x_val += 0.5) {
+        file << format(x_val) << ";";
+
+        bool is_exp = false;
+        for (int i = 0; i < n; i++) {
+            if (fabs(x_val - x[i]) < 0.25) {
+                file << format(y[i]);
+                is_exp = true;
+                break;
+            }
+        }
+        if (!is_exp) file << "";
+
+        file << ";" << format(a_lin + b_lin * x_val);
+        file << ";" << format(a_pow * pow(x_val, b_pow));
+        file << ";" << format(a_exp * pow(b_exp, x_val));
+        file << ";" << format(a_quad + b_quad * x_val + c_quad * x_val * x_val);
+        file << endl;
+    }
+
+    file.close();
+}
