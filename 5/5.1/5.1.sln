@@ -1,31 +1,175 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35222.181
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5.1", "5.1\5.1.vcxproj", "{65DF6079-5273-408C-80F9-BFD8F1B68143}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Debug|x64.ActiveCfg = Debug|x64
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Debug|x64.Build.0 = Debug|x64
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Debug|x86.ActiveCfg = Debug|Win32
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Debug|x86.Build.0 = Debug|Win32
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Release|x64.ActiveCfg = Release|x64
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Release|x64.Build.0 = Release|x64
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Release|x86.ActiveCfg = Release|Win32
-		{65DF6079-5273-408C-80F9-BFD8F1B68143}.Release|x86.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D4E3F2DA-FFB4-48D5-9CA8-E4FF4CE2A4D7}
-	EndGlobalSection
-EndGlobal
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
+using namespace std;
+
+double f(double x) {
+    return 1.0 / (1.0 + 25.0 * x * x);
+}
+
+string format(double value) {
+    stringstream ss;
+    ss << fixed << setprecision(6) << value;
+    string str = ss.str();
+    replace(str.begin(), str.end(), '.', ',');
+    return str;
+}
+
+double lagrange(double x, const vector<double>& X, const vector<double>& Y) {
+    int n = X.size();
+    double result = 0.0;
+    for (int i = 0; i < n; i++) {
+        double term = Y[i];
+        for (int j = 0; j < n; j++) {
+            if (j != i) {
+                term *= (x - X[j]) / (X[i] - X[j]);
+            }
+        }
+        result += term;
+    }
+    return result;
+}
+
+class CubicSpline {
+private:
+    vector<double> x, a, b, c, d;
+    int n;
+
+public:
+    CubicSpline(const vector<double>& X, const vector<double>& Y) {
+        x = X;
+        n = x.size() - 1;
+        a = Y;
+        b.resize(n);
+        c.resize(n + 1);
+        d.resize(n);
+
+        vector<double> h(n), alpha(n), l(n + 1), mu(n + 1), z(n + 1);
+
+        for (int i = 0; i < n; i++) h[i] = x[i + 1] - x[i];
+        for (int i = 1; i < n; i++) {
+            alpha[i] = (3.0 / h[i]) * (a[i + 1] - a[i]) - (3.0 / h[i - 1]) * (a[i] - a[i - 1]);
+        }
+
+        l[0] = 1; mu[0] = 0; z[0] = 0;
+        for (int i = 1; i < n; i++) {
+            l[i] = 2 * (x[i + 1] - x[i - 1]) - h[i - 1] * mu[i - 1];
+            mu[i] = h[i] / l[i];
+            z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / l[i];
+        }
+        l[n] = 1; z[n] = 0; c[n] = 0;
+
+        for (int j = n - 1; j >= 0; j--) {
+            c[j] = z[j] - mu[j] * c[j + 1];
+            b[j] = (a[j + 1] - a[j]) / h[j] - h[j] * (c[j + 1] + 2 * c[j]) / 3;
+            d[j] = (c[j + 1] - c[j]) / (3 * h[j]);
+        }
+    }
+
+    double interpolate(double x_val) const {
+        if (x_val <= x[0]) return a[0];
+        if (x_val >= x[n]) return a[n];
+
+        int i = 0;
+        while (i < n && x_val > x[i + 1]) i++;
+
+        double dx = x_val - x[i];
+        return a[i] + b[i] * dx + c[i] * dx * dx + d[i] * dx * dx * dx;
+    }
+};
+
+vector<double> uniform_nodes(int n, double a, double b) {
+    vector<double> res(n + 1);
+    for (int i = 0; i <= n; i++) res[i] = a + i * (b - a) / n;
+    return res;
+}
+
+vector<double> chebyshev_nodes(int n, double a, double b) {
+    vector<double> res(n + 1);
+    for (int i = 0; i <= n; i++) {
+        double t = cos((2.0 * i + 1.0) / (2.0 * (n + 1)) * acos(-1));
+        res[i] = (a + b) / 2.0 + (b - a) / 2.0 * t;
+    }
+    return res;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");;
+
+    vector<int> nn = { 5, 10, 15 };
+    double a = -1.0, b = 1.0;
+    int points = 200;
+    
+    ofstream out1a("C:\\Users\\User\\OneDrive\\Desktop\\5\\5.1\\lagrange_rav.csv");
+    out1a << "x;true_value";
+    for (int n : nn) out1a << ";lagrange_n" << n;
+    out1a << endl;
+
+    for (int i = 0; i <= points; i++) {
+        double x = a + i * (b - a) / points;
+        out1a << format(x) << ";" << format(f(x));
+
+        for (int n : nn) {
+            vector<double> X = uniform_nodes(n, a, b);
+            vector<double> Y(X.size());
+            for (size_t j = 0; j < X.size(); j++) Y[j] = f(X[j]);
+            out1a << ";" << format(lagrange(x, X, Y));
+        }
+        out1a << endl;
+    }
+    out1a.close();
+    ofstream out1b("C:\\Users\\User\\OneDrive\\Desktop\\5\\5.1\\lagrange_chebyshev.csv");
+    out1b << "x;true_value";
+    for (int n : nn) out1b << ";lagrange_n" << n;
+    out1b << endl;
+    for (int i = 0; i <= points; i++) {
+        double x = a + i * (b - a) / points;
+        out1b << format(x) << ";" << format(f(x));
+
+        for (int n : nn) {
+            vector<double> X = chebyshev_nodes(n, a, b);
+            vector<double> Y(X.size());
+            for (size_t j = 0; j < X.size(); j++) Y[j] = f(X[j]);
+            out1b << ";" << format(lagrange(x, X, Y));
+        }
+        out1b << endl;
+    }
+    out1b.close();
+    ofstream out2a("C:\\Users\\User\\OneDrive\\Desktop\\5\\5.1\\cubic_spline.csv");
+    out2a << "x;true_value";
+    for (int n : nn) out2a << ";spline_n" << n;
+    out2a << endl;
+
+    for (int i = 0; i <= points; i++) {
+        double x = a + i * (b - a) / points;
+        out2a << format(x) << ";" << format(f(x));
+        for (int n : nn) {
+            vector<double> X = uniform_nodes(n, a, b);
+            vector<double> Y(X.size());
+            for (size_t j = 0; j < X.size(); j++) Y[j] = f(X[j]);
+            CubicSpline spline(X, Y);
+            out2a << ";" << format(spline.interpolate(x));
+        }
+        out2a << endl;
+    }
+    out2a.close();
+
+    vector<double> Xt = { 2, 3, 5, 7 };
+    vector<double> Yt = { 4, -2, 6, -3 };
+    CubicSpline spline_table(Xt, Yt);
+
+    ofstream out2b("C:\\Users\\User\\OneDrive\\Desktop\\5\\5.1\\table_spline.csv");
+    out2b << "x;spline_value;is_node" << endl;
+    for (double x = 2.0; x <= 7.0; x += 0.02) {
+        out2b << format(x) << ";" << format(spline_table.interpolate(x)) << ";0" << endl;
+    }
+    for (size_t i = 0; i < Xt.size(); i++) {
+        out2b << format(Xt[i]) << ";" << format(Yt[i]) << ";1" << endl;
+    }
+    out2b.close();
+    cout << "Данные занесены в файлы" << endl;
+}
