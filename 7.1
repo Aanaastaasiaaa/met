@@ -1,0 +1,147 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+#include <vector>
+using namespace std;
+
+const double pi = acos(-1);
+
+double erf_integrand(double t) {
+    return exp(-t * t);
+}
+
+double simpson_erf(double x, int n) {
+    if (x == 0.0) return 0.0;
+    double h = x / n;
+    double sum = erf_integrand(0) + erf_integrand(x);
+    for (int i = 1; i < n; i++) {
+        double t = i * h;
+        if (i % 2 == 0) sum += 2 * erf_integrand(t);
+        else sum += 4 * erf_integrand(t);
+    }
+    return (h / 3.0) * sum;
+}
+
+double erf_custom(double x) {
+    if (x < 0) return -erf_custom(-x);
+    const double sqrt_pi = sqrt(pi);
+    double integral = simpson_erf(x, 1000);
+    return (2.0 / sqrt_pi) * integral;
+}
+
+void z1() {
+    cout << "Задача 1\n";
+    cout << fixed << setprecision(6);
+    cout << "x\t\terf(x) числ.\t\terf(x) точн. \n";
+    for (double x = 0.0; x <= 2.01; x += 0.1) {
+        double my_erf = erf_custom(x);
+        double exact_erf = erf(x);
+        cout << x << "\t\t" << my_erf << "\t\t" << exact_erf << "\n";
+    }
+}
+
+double pi_integrand(double x) {
+    return 4.0 / (1.0 + x * x);
+}
+
+double rectangles(double a, double b, int n) {
+    double h = (b - a) / n;
+    double sum = 0.0;
+    for (int i = 0; i < n; i++) {
+        double x = a + i * h;
+        sum += pi_integrand(x);
+    }
+    return h * sum;
+}
+
+double trapezoidal(double a, double b, int n) {
+    double h = (b - a) / n;
+    double sum = (pi_integrand(a) + pi_integrand(b)) / 2.0;
+    for (int i = 1; i < n; i++) {
+        double x = a + i * h;
+        sum += pi_integrand(x);
+    }
+    return h * sum;
+}
+
+double simpson_pi(double a, double b, int n) {
+    if (n % 2 != 0) n++;
+    double h = (b - a) / n;
+    double sum = pi_integrand(a) + pi_integrand(b);
+    for (int i = 1; i < n; i++) {
+        double x = a + i * h;
+        if (i % 2 == 0) sum += 2 * pi_integrand(x);
+        else sum += 4 * pi_integrand(x);
+    }
+    return (h / 3.0) * sum;
+}
+
+void z2() {
+    cout << "\nЗадача 2\n";
+    double a = 0.0, b = 1.0;
+    vector<int> ns = { 8, 32, 128 };
+    double exact_pi = pi;
+
+    cout << fixed << setprecision(10);
+    cout << "n\tМетод прямоуг.\tТрапеции\tСплайн\n";
+    for (int n : ns) {
+        double rect = rectangles(a, b, n);
+        double trap = trapezoidal(a, b, n);
+        double simp = simpson_pi(a, b, n);
+        cout << n << "\t" << rect << "\t" << trap << "\t" << simp << "\n";
+    }
+
+    cout << "\nдля n=128:\n";
+    double rect128 = rectangles(a, b, 128);
+    double trap128 = trapezoidal(a, b, 128);
+    double simp128 = simpson_pi(a, b, 128);
+    cout << "Ошибка прямоуг: " << fabs(rect128 - exact_pi) << "\n";
+    cout << "Ошибка трапец: " << fabs(trap128 - exact_pi) << "\n";
+    cout << "Ошибка Симпсон: " << fabs(simp128 - exact_pi) << "\n";
+}
+
+double f3(double x) {
+    if (x <= 2.0) {
+        return exp(x);
+    }
+    else {
+        return 1.0 / (4.0 - sin(16.0 * pi * x));
+    }
+}
+
+double adaptive_simpson(double a, double b, double (*f)(double), double eps, int max_depth, int depth=0) {
+    double m = (a + b) / 2.0;
+    double h = (b - a) / 2.0;
+    double S = (h / 3.0) * (f(a) + 4.0 * f(m) + f(b));
+    double S_left = (h / 6.0) * (f(a) + 4.0 * f((a + m) / 2.0) + f(m));
+    double S_right = (h / 6.0) * (f(m) + 4.0 * f((m + b) / 2.0) + f(b));
+    double S_total = S_left + S_right;
+    if (fabs(S_total - S) < 15.0 * eps || depth >= max_depth) {
+        return S_total;
+    }
+    return adaptive_simpson(a, m, f, eps / 2.0, max_depth, depth + 1) +
+        adaptive_simpson(m, b, f, eps / 2.0, max_depth, depth + 1);
+}
+
+void z3() {
+    cout << "\nЗадача 3\n";
+    cout << "f(x) = { e^x, 0 ≤ x ≤ 2\n";
+    cout << "        { 1/(4 - sin(16πx)), 2 < x ≤ 4\n\n";
+    double a = 0.0, b = 4.0;
+    double eps = 1e-8;
+    int max_depth = 20;
+    double result = adaptive_simpson(a, b, f3, eps, max_depth);
+    cout << fixed << setprecision(10);
+    cout << "Результат интегрирования: I = " << result << "\n\n";
+    cout << "  - Метод: адаптивный Симпсон (сплайн-квадратура)\n";
+    double exact_part1 = exp(2.0) - 1.0;
+    cout << "  - Интеграл от e^x на [0,2] = " << exact_part1 << " (аналитически)\n";
+    cout << "  - Интеграл на [2,4] = " << result - exact_part1 << " (численно)\n";
+}
+
+int main() {
+    setlocale(LC_ALL, "rus");
+    z1();
+    z2();
+    z3();
+}
