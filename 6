@@ -2,9 +2,23 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 using namespace std;
 
 const double PI = acos(-1);
+
+string to_comma(double value) {
+    stringstream ss;
+    ss << fixed << setprecision(6) << value;
+    string s = ss.str();
+    size_t pos = s.find('.');
+    if (pos != string::npos) {
+        s[pos] = ',';
+    }
+    return s;
+}
 
 double f(double x) {
     if (x >= 0 && x < 2) {
@@ -17,20 +31,36 @@ double f(double x) {
 }
 
 void z1() {
-    cout << "1. Площадь треугольника методом Монте-Карло\n";
+    cout << "ЗАДАНИЕ 1\n";
 
     double w = 20.0;
     double h = 10.0;
     double Srect = w * h;
-    int N = 100000;
+    int N = 10000;
     int M = 0;
+
+    ofstream file("C:\\Users\\User\\OneDrive\\Desktop\\6\\task1.csv");
+    file << "Тип;x;y;\n";
+
+    for (double x = 0; x <= 20; x += 0.1) {
+        file << "graph;" << to_comma(x) << ";" << to_comma(f(x)) << "\n";
+    }
+
+    file << ";;\n";
+
     for (int i = 0; i < N; i++) {
         double x = (double)rand() / RAND_MAX * w;
         double y = (double)rand() / RAND_MAX * h;
-        if (y < f(x)) {
-            M++;
+
+        int inside = (y < f(x)) ? 1 : 0;
+        if (inside) M++;
+
+        if (i % 50 == 0) {
+            file << "point;" << to_comma(x) << ";" << to_comma(y) << "\n";
         }
     }
+
+    file.close();
 
     double S = (double)M / N * Srect;
     double Stoch = 100.0;
@@ -43,10 +73,12 @@ void z1() {
 }
 
 void z2() {
-    cout << "\n2. Вычисление интеграла методом Монте-Карло\n";
+    cout << "\nЗАДАНИЕ 2\n";
+
     auto g = [](double x) {
         return sqrt(11.0 - 2.0 * sin(x) * sin(x));
         };
+
     double a = 0.0;
     double b = 5.0;
     double maxY = 0.0;
@@ -55,15 +87,32 @@ void z2() {
         if (val > maxY) maxY = val;
     }
     maxY += 0.5;
-    int N = 100000;
+
+    int N = 10000;
     int M = 0;
+
+    ofstream file("C:\\Users\\User\\OneDrive\\Desktop\\6\\task2.csv");
+    file << "Тип;x;y\n";
+
+    for (double x = 0; x <= 5; x += 0.05) {
+        file << "graph;" << to_comma(x) << ";" << to_comma(g(x)) << "\n";
+    }
+
+    file << ";;\n";
+
     for (int i = 0; i < N; i++) {
         double x = a + (double)rand() / RAND_MAX * (b - a);
         double y = (double)rand() / RAND_MAX * maxY;
-        if (y <= g(x)) {
-            M++;
+
+        int inside = (y <= g(x)) ? 1 : 0;
+        if (inside) M++;
+
+        if (i % 50 == 0) {
+            file << "point;" << to_comma(x) << ";" << to_comma(y) << "\n";
         }
     }
+
+    file.close();
 
     double I = (double)M / N * (b - a) * maxY;
 
@@ -74,18 +123,42 @@ void z2() {
 }
 
 void z3() {
-    cout << "\n3. Вычисление числа pi через площадь круга\n";
+    cout << "\nЗАДАНИЕ 3\n";
 
     double R = 2.0;
-    int N = 1000000;
+    int N = 10000;
     int M = 0;
+
+    ofstream file("C:\\Users\\User\\OneDrive\\Desktop\\6\\task3.csv");
+    file << "Тип;x;y\n";
+
+    for (double phi = 0; phi <= 2 * PI; phi += 0.05) {
+        double x = R * cos(phi);
+        double y = R * sin(phi);
+        file << "circle;" << to_comma(x) << ";" << to_comma(y) << "\n";
+    }
+
+    file << "square;" << to_comma(-R) << ";" << to_comma(-R) << ";\n";
+    file << "square;" << to_comma(R) << ";" << to_comma(-R) << ";\n";
+    file << "square;" << to_comma(R) << ";" << to_comma(R) << ";\n";
+    file << "square;" << to_comma(-R) << ";" << to_comma(R) << ";\n";
+    file << "square;" << to_comma(-R) << ";" << to_comma(-R) << ";\n";
+
+    file << ";;\n";
+
     for (int i = 0; i < N; i++) {
         double x = -R + (double)rand() / RAND_MAX * (2 * R);
         double y = -R + (double)rand() / RAND_MAX * (2 * R);
-        if (x * x + y * y <= R * R) {
-            M++;
+
+        int inside = (x * x + y * y <= R * R) ? 1 : 0;
+        if (inside) M++;
+
+        if (i % 50 == 0) {
+            file << "point;" << to_comma(x) << ";" << to_comma(y) << "\n";
         }
     }
+
+    file.close();
 
     double pi_approx = 4.0 * M / N;
 
@@ -98,12 +171,26 @@ void z3() {
 }
 
 void z4() {
-    cout << "\n4. Площадь фигуры в полярных координатах\n";
+    cout << "\nЗАДАНИЕ 4\n";
+
     double A = 13.0;
     double B = 9.0;
     double Rmax = sqrt(max(A, B));
-    int N = 100000;
+    int N = 10000;
     int M = 0;
+
+    ofstream file("C:\\Users\\User\\OneDrive\\Desktop\\6\\task4.csv");
+    file << "Тип;x;y\n";
+
+    for (double phi = 0; phi <= 2 * PI; phi += 0.05) {
+        double r = sqrt(A * cos(phi) * cos(phi) + B * sin(phi) * sin(phi));
+        double x = r * cos(phi);
+        double y = r * sin(phi);
+        file << "boundary;" << to_comma(x) << ";" << to_comma(y) << "\n";
+    }
+
+    file << ";;\n";
+
     for (int i = 0; i < N; i++) {
         double x = -Rmax + (double)rand() / RAND_MAX * (2 * Rmax);
         double y = -Rmax + (double)rand() / RAND_MAX * (2 * Rmax);
@@ -111,10 +198,16 @@ void z4() {
         double phi = atan2(y, x);
         if (phi < 0) phi += 2 * PI;
         double r_max = sqrt(A * cos(phi) * cos(phi) + B * sin(phi) * sin(phi));
-        if (r <= r_max) {
-            M++;
+
+        int inside = (r <= r_max) ? 1 : 0;
+        if (inside) M++;
+
+        if (i % 50 == 0) {
+            file << "point;" << to_comma(x) << ";" << to_comma(y) << "\n";
         }
     }
+
+    file.close();
 
     double Ssquare = (2 * Rmax) * (2 * Rmax);
     double Sfig = (double)M / N * Ssquare;
